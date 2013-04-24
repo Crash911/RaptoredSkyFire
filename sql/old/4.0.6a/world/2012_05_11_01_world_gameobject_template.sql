@@ -1,0 +1,1 @@
+UPDATE gameobject_template SET `entry`=194802, `type`=8, `name`="TEMP Zoram'gar Forge", `data0`=1607, `data1`=15, `data6`=0 WHERE entry=194802;
