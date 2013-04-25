@@ -23952,7 +23952,7 @@ bool Player::HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item cons
 
 bool Player::HasItemFitToSpellRequirements(SpellEntry const* spellInfo, Item const* ignoreItem)
 {
-	SpellInfo *test;
+	SpellInfo *test = 0;
 	test->Id = spellInfo->Id;
     if (test->EquippedItemClass < 0)
         return true;

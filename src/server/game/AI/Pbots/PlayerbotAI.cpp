@@ -212,14 +212,14 @@ uint32 PlayerbotAI::getSpellId(const char *args, bool master) const
         if(name.empty() || !Utf8FitTo(name, wnamepart)) continue;
 
         bool isExactMatch = (name.length() == wnamepart.length()) ? true : false;
-        bool usesNoReagents = (pSpellInfo->Reagent[0] <=  0) ? true : false;
+      //  bool usesNoReagents = (pSpellInfo->Reagent[0] <=  0) ? true : false;
 
         //if we already found a spell
         bool useThisSpell = true;
         if(foundSpellId > 0)
         {
             if(isExactMatch && !foundExactMatch){}
-            else if(usesNoReagents && !foundMatchUsesNoReagents){}
+            //else if(usesNoReagents && !foundMatchUsesNoReagents){}
             else if(spellId > foundSpellId){}
             else useThisSpell = false;
         }
@@ -227,7 +227,7 @@ uint32 PlayerbotAI::getSpellId(const char *args, bool master) const
         {
             foundSpellId = spellId;
             foundExactMatch = isExactMatch;
-            foundMatchUsesNoReagents = usesNoReagents;
+           // foundMatchUsesNoReagents = usesNoReagents;
         }
     }
     return foundSpellId;
@@ -247,14 +247,14 @@ uint32 PlayerbotAI::getSpellIdExact(const char *args, bool includePassive, bool 
     {
         uint32 spellId = itr->first;
         if(itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled || ( !includePassive && IsPassiveSpell(spellId))) continue;
-        const SpellEntry *pSpellInfo = sSpellStore.LookupEntry(spellId);
+        const SpellInfo *pSpellInfo = GetSpellInfo(spellId);
         if(!pSpellInfo) continue;
-        if(pSpellInfo->Effect[0] == SPELL_EFFECT_LEARN_SPELL) continue; //This is a learn spell
+		if(pSpellInfo->Effects->Effect == SPELL_EFFECT_LEARN_SPELL) continue; //This is a learn spell
 
         const std::string name = chr2str2(pSpellInfo->SpellName[loc]);
         if(name.empty()) continue;
         if(strcmp(name.c_str(),namepart.c_str())) continue;
-        if(pSpellInfo->Reagent[0] <=  0 && !foundMatchUsesNoReagents){ foundSpellId = spellId; foundMatchUsesNoReagents = true; }
+       // if(pSpellInfo->Reagent[0] <=  0 && !foundMatchUsesNoReagents){ foundSpellId = spellId; foundMatchUsesNoReagents = true; }
         else if(spellId > foundSpellId) { foundSpellId = spellId; }
     }
     //sLog->outDebug(LOG_FILTER_NETWORKIO, "PBot Class %u - Found in Search - [%u/%s]", m_bot->getClass(), foundSpellId, namepart.c_str());
@@ -1670,34 +1670,34 @@ void PlayerbotAI::UseMount() const
             uint32 spellId = itr->first;
             if(itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled || IsPassiveSpell(spellId))
                 continue;
-            const SpellEntry *pSpellInfo = sSpellStore.LookupEntry(spellId);
+            const SpellInfo *pSpellInfo = GetSpellInfo(spellId);
             if(!pSpellInfo)
                 continue;
-            if(pSpellInfo->EffectApplyAuraName[0] == SPELL_AURA_MOUNTED)
+			if(pSpellInfo->Effects->ApplyAuraName == SPELL_AURA_MOUNTED)
             {
-                if((pSpellInfo->EffectApplyAuraName[1] == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
-                    && (pSpellInfo->EffectApplyAuraName[2] == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
+                if((pSpellInfo->Effects->ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
+                    && (pSpellInfo->Effects->ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
                 {
-                    if((pSpellInfo->EffectBasePoints[1] == master_speed1)
-                        && (pSpellInfo->EffectBasePoints[2] == master_speed2))
+					if((pSpellInfo->Effects->BasePoints == master_speed1)
+                        && (pSpellInfo->Effects->BasePoints == master_speed2))
                     {
                         spellMount = spellId;
                         break;
                     }
                 }
-                else if((pSpellInfo->EffectApplyAuraName[2] == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
-                    && (pSpellInfo->EffectApplyAuraName[1] == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
+                else if((pSpellInfo->Effects->ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
+                    && (pSpellInfo->Effects->ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
                 {
-                    if((pSpellInfo->EffectBasePoints[2] == master_speed2)
-                        && (pSpellInfo->EffectBasePoints[1] == master_speed1))
+					if((pSpellInfo->Effects->BasePoints == master_speed2)
+						&& (pSpellInfo->Effects->BasePoints == master_speed1))
                     {
                         spellMount = spellId;
                         break;
                     }
                 }
-                else if(pSpellInfo->EffectApplyAuraName[1] == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
+                else if(pSpellInfo->Effects->ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
                 {
-                    if(pSpellInfo->EffectBasePoints[1] == master_speed1 && master_speed2 <= 0) { spellMount = spellId; break; } //Has no secondary mount aura
+					if(pSpellInfo->Effects->BasePoints == master_speed1 && master_speed2 <= 0) { spellMount = spellId; break; } //Has no secondary mount aura
                     else if (spellMount == 0) { spellMount = spellId; } // default to first mount in case it doesnt have correct version
                 }
             }
@@ -2598,8 +2598,8 @@ bool PlayerbotAI::CanCast(const SpellEntry * pSpellInfo, Unit *target, bool cast
     {
         uint32 formMask = (GetForm() ? 1 << (GetPlayerBot()->GetShapeshiftForm() - 1) : 0);
         //sLog->outDebug(LOG_FILTER_NETWORKIO, "DEBUG: Spell [%u] - Form [%X] - Need Form [%X] - Not Form [%X]", pSpellInfo->Id, formMask, pSpellInfo->Stances, pSpellInfo->StancesNot );
-        if (pSpellInfo->Stances & formMask) { return true; }
-        if (pSpellInfo->StancesNot && pSpellInfo->StancesNot & formMask) { return false; }
+        //if (pSpellInfo->Stances & formMask) { return true; }
+        //if (pSpellInfo->StancesNot && pSpellInfo->StancesNot & formMask) { return false; }
         if (!m_bot->HasItemFitToSpellRequirements(pSpellInfo)) return false;
     }
 	SpellInfo *info = 0;

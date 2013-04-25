@@ -108,7 +108,7 @@ bool PlayerbotClassAI::listAuras(Unit *u)
 
 bool PlayerbotClassAI::HasAuraName (Unit *unit, uint32 spellId, uint64 casterGuid)
 {
-    const SpellEntry *const pSpellInfo = GetSpellStore()->LookupEntry (spellId);
+    const SpellInfo *const pSpellInfo = GetSpellInfo(spellId);
     if(!pSpellInfo) return false;
     int loc = m_bot->GetSession()->GetSessionDbcLocale();
     const std::string  name = chr2str(pSpellInfo->SpellName[loc]);
@@ -144,13 +144,15 @@ bool PlayerbotClassAI::castDispel (uint32 dispelSpell, Unit *dTarget, bool check
 {
     if (dispelSpell == 0 || !dTarget ) return false;
     //if (!canCast(dispelSpell, dTarget, true)) return false; //Needless cpu cycles wasted, usually a playerbot can cast a dispell
-    const SpellEntry *dSpell = GetSpellStore()->LookupEntry(dispelSpell);
+    const SpellInfo *dSpell = GetSpellInfo(dispelSpell);
+	SpellEntry *tmp = 0;
     if (!dSpell) return false;
 
+	tmp->Id = dSpell->Id;
     for (uint8 i = 0 ; i < MAX_SPELL_EFFECTS ; ++i)
     {
-        if (dSpell->Effect[i] != (uint32)SPELL_EFFECT_DISPEL) continue;
-        uint32 dispel_type = dSpell->EffectMiscValue[i];
+		if (dSpell->Effects->Effect != (uint32)SPELL_EFFECT_DISPEL) continue;
+		uint32 dispel_type = dSpell->Effects->MiscValue;
         uint32 dispelMask  = GetDispellMask(DispelType(dispel_type));
         Unit::AuraMap const& auras = dTarget->GetOwnedAuras();
         for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); itr++)
@@ -172,7 +174,7 @@ bool PlayerbotClassAI::castDispel (uint32 dispelSpell, Unit *dTarget, bool check
                         continue;
                 }
                 // If there is a successfull match return, else continue searching.
-                if (CastSpell(dSpell, dTarget, checkFirst, castExistingAura, skipFriendlyCheck, skipEquipStanceCheck)) { return true; }
+                if (CastSpell(tmp, dTarget, checkFirst, castExistingAura, skipFriendlyCheck, skipEquipStanceCheck)) { return true; }
             }
         }
     }
@@ -227,15 +229,17 @@ bool PlayerbotClassAI::castSelfCCBreakers (uint32 castList[])
     {
         dispelSpell = castList[j];
         if (dispelSpell == 0 || !dTarget->HasSpell(dispelSpell) || !CanCast(dispelSpell, dTarget, true)) continue;
-        SpellEntry const *dSpell = GetSpellStore()->LookupEntry(dispelSpell);
+        SpellInfo const *dSpell = GetSpellInfo(dispelSpell);
+		SpellEntry *tmp = 0;
         if (!dSpell) continue;
 
+		tmp->Id = dSpell->Id;
         for (uint8 i = 0 ; i < MAX_SPELL_EFFECTS ; ++i)
         {
-            if (dSpell->Effect[i] != (uint32)SPELL_EFFECT_DISPEL && dSpell->Effect[i] != (uint32)SPELL_EFFECT_APPLY_AURA) continue;
-            if (dSpell->Effect[i] == (uint32)SPELL_EFFECT_APPLY_AURA && (
-                (dSpell->EffectApplyAuraName[i] != (uint32) SPELL_AURA_MECHANIC_IMMUNITY) ||
-                (dSpell->EffectApplyAuraName[i] != (uint32) SPELL_AURA_DISPEL_IMMUNITY)
+			if (dSpell->Effects->Effect != (uint32)SPELL_EFFECT_DISPEL && dSpell->Effects->Effect != (uint32)SPELL_EFFECT_APPLY_AURA) continue;
+            if (dSpell->Effects->Effect == (uint32)SPELL_EFFECT_APPLY_AURA && (
+				(dSpell->Effects->ApplyAuraName != (uint32) SPELL_AURA_MECHANIC_IMMUNITY) ||
+                (dSpell->Effects->ApplyAuraName != (uint32) SPELL_AURA_DISPEL_IMMUNITY)
                 )) continue;
 
             Unit::AuraMap const& auras = dTarget->GetOwnedAuras();
@@ -246,9 +250,9 @@ bool PlayerbotClassAI::castSelfCCBreakers (uint32 castList[])
                 if (!aurApp) continue;
 
                 if (aura->GetSpellInfo() && (
-                    (dSpell->Effect[i] == (uint32)SPELL_EFFECT_DISPEL  && ((1<<aura->GetSpellInfo()->Dispel) & GetDispellMask(DispelType(dSpell->EffectMiscValue[i]))) )
-					|| (dSpell->EffectApplyAuraName[i] == (uint32) SPELL_AURA_MECHANIC_IMMUNITY && ( GetAllSpellMechanicMask(aura->GetSpellInfo()) & ( 1 << dSpell->EffectMiscValue[i]) ) )
-                    || (dSpell->EffectApplyAuraName[i] == (uint32) SPELL_AURA_DISPEL_IMMUNITY && ( (1<<aura->GetSpellInfo()->Dispel) & GetDispellMask(DispelType(dSpell->EffectMiscValue[i])) ) )
+					(dSpell->Effects->Effect == (uint32)SPELL_EFFECT_DISPEL  && ((1<<aura->GetSpellInfo()->Dispel) & GetDispellMask(DispelType(dSpell->Effects->MiscValue))) )
+					|| (dSpell->Effects->ApplyAuraName == (uint32) SPELL_AURA_MECHANIC_IMMUNITY && ( GetAllSpellMechanicMask(aura->GetSpellInfo()) & ( 1 << dSpell->Effects->MiscValue) ) )
+                    || (dSpell->Effects->ApplyAuraName == (uint32) SPELL_AURA_DISPEL_IMMUNITY && ( (1<<aura->GetSpellInfo()->Dispel) & GetDispellMask(DispelType(dSpell->Effects->MiscValue)) ) )
                     ) )
                 {
                     if(aura->GetSpellInfo()->Dispel == DISPEL_MAGIC)

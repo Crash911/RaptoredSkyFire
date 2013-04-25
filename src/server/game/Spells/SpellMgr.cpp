@@ -3812,15 +3812,16 @@ bool SpellMgr::IsPrimaryProfessionFirstRankSpell(uint32 spellId) const
 
 bool SpellMgr::IsPrimaryProfessionSpell(uint32 spellId)
 {
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
+	SpellMgr *test = 0;
+    SpellInfo const *spellInfo = test->GetSpellInfo(spellId);
     if (!spellInfo)
         return false;
 
     for (uint8 i = 0 ; i < MAX_SPELL_EFFECTS ; ++i)
     {
-        if (spellInfo->Effect[i] == SPELL_EFFECT_SKILL)
+		if (spellInfo->Effects->Effect == SPELL_EFFECT_SKILL)
         {
-            uint32 skill = spellInfo->EffectMiscValue[i];
+			uint32 skill = spellInfo->Effects->MiscValue;
 
             bool found = IsPrimaryProfessionSkill(skill);
             if (found)

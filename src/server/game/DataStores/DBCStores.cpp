@@ -944,7 +944,7 @@ float GetGtSpellScalingValue(int8 class_, uint8 level)
     else
         return -1.0f;
 }
-// script support functions
+/*// script support functions
  DBCStorage <SoundEntriesEntry>  const* GetSoundEntriesStore()   { return &sSoundEntriesStore;   }
  DBCStorage <SpellEntry>         const* GetSpellStore()          { return &sSpellStore;          }
  DBCStorage <SpellRangeEntry>    const* GetSpellRangeStore()     { return &sSpellRangeStore;     }
@@ -954,3 +954,4 @@ float GetGtSpellScalingValue(int8 class_, uint8 level)
  DBCStorage <EmotesEntry>        const* GetEmotesStore()         { return &sEmotesStore;         }
  DBCStorage <EmotesTextEntry>    const* GetEmotesTextStore()     { return &sEmotesTextStore;     }
  DBCStorage <AchievementEntry>   const* GetAchievementStore()    { return &sAchievementStore;    }
+ */

@@ -1904,7 +1904,7 @@ struct SpellEntry
     uint32 SpellTargetRestrictionsId;                       // 44       SpellTargetRestrictions.dbc
     uint32 SpellTotemsId;                                   // 45       SpellTotems.dbc
     //uint32 unk2;                                          // 46
-	uint32    EffectApplyAuraName[MAX_SPELL_EFFECTS];       // 95-97    m_effectAura
+	/*uint32    EffectApplyAuraName[MAX_SPELL_EFFECTS];       // 95-97    m_effectAura
 	uint32    Effect[MAX_SPELL_EFFECTS];                    // 71-73    m_effect
 	uint32     EffectMiscValue[MAX_SPELL_EFFECTS];           // 110-112  m_effectMiscValue
 	uint32    EffectTriggerSpell[MAX_SPELL_EFFECTS];        // 116-118  m_effectTriggerSpell
@@ -1912,6 +1912,7 @@ struct SpellEntry
 	uint32     EffectBasePoints[MAX_SPELL_EFFECTS];          // 80-82    m_effectBasePoints (don't must be used in spell/auras explicitly, must be used cached Spell::m_currentBasePoints)
     uint32    Stances;                                      // 12       m_shapeshiftMask
     uint32    StancesNot;                                   // 14       m_shapeshiftExclude
+	*/
 };
 
 typedef std::set<uint32> SpellCategorySet;
