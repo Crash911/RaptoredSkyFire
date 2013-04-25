@@ -19993,20 +19993,18 @@ void Player::SaveToDB(bool create /*=false*/)
 
         if (!IsBeingTeleported())
         {
-		 if (IsPlayerbot() && m_SaveOrgLocation == 1)
+			if (IsPlayerbot() && m_SaveOrgLocation == 1)
         {
-			std::stringstream ss;
-            ss << m_playerbotAI->GetStartMapID() << ", "
-            << (uint32)m_playerbotAI->GetStartInstanceID() << ", "
-            << (uint32)m_playerbotAI->GetStartDifficulty() << ", "
-            << finiteAlways(m_playerbotAI->GetStartX()) << ", "
-            << finiteAlways(m_playerbotAI->GetStartY()) << ", "
-            << finiteAlways(m_playerbotAI->GetStartZ()) << ", "
-            << finiteAlways(m_playerbotAI->GetStartO()) << ", ";
+			stmt->setUInt32(index++, m_playerbotAI->GetStartMapID());
+            stmt->setUInt32(index++, (uint32)m_playerbotAI->GetStartInstanceID());
+            stmt->setUInt32(index++, (uint32)m_playerbotAI->GetStartDifficulty());
+			stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartX()));
+            stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartY()));
+            stmt->setFloat(index++,finiteAlways(m_playerbotAI->GetStartZ()));
+            stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartO()));
         }
         else
         {
-		
             stmt->setUInt16(index++, (uint16)GetMapId());
             stmt->setUInt32(index++, (uint32)GetInstanceId());
             stmt->setUInt8(index++, (uint8(GetDungeonDifficulty()) | uint8(GetRaidDifficulty()) << 4));
@@ -20014,20 +20012,21 @@ void Player::SaveToDB(bool create /*=false*/)
             stmt->setFloat(index++, finiteAlways(GetPositionY()));
             stmt->setFloat(index++, finiteAlways(GetPositionZ()));
             stmt->setFloat(index++, finiteAlways(GetOrientation()));
+			}
         }
-       
+        else
+        {
 		if (IsPlayerbot() && m_SaveOrgLocation == 1)
         {
-			std::stringstream ss;
-            ss << m_playerbotAI->GetStartMapID() << ", "
-            << (uint32)m_playerbotAI->GetStartInstanceID() << ", "
-            << (uint32)m_playerbotAI->GetStartDifficulty() << ", "
-            << finiteAlways(m_playerbotAI->GetStartX()) << ", "
-            << finiteAlways(m_playerbotAI->GetStartY()) << ", "
-            << finiteAlways(m_playerbotAI->GetStartZ()) << ", "
-            << finiteAlways(m_playerbotAI->GetStartO()) << ", ";
+			stmt->setUInt32(index++, m_playerbotAI->GetStartMapID());
+            stmt->setUInt32(index++,(uint32)m_playerbotAI->GetStartInstanceID());
+            stmt->setUInt32(index++,(uint32)m_playerbotAI->GetStartDifficulty());
+            stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartX()));
+            stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartY()));
+            stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartZ()));
+            stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartO()));
         }
-		else
+        else
         {
             stmt->setUInt16(index++, (uint16)GetTeleportDest().GetMapId());
             stmt->setUInt32(index++, (uint32)0);
@@ -20036,6 +20035,7 @@ void Player::SaveToDB(bool create /*=false*/)
             stmt->setFloat(index++, finiteAlways(GetTeleportDest().GetPositionY()));
             stmt->setFloat(index++, finiteAlways(GetTeleportDest().GetPositionZ()));
             stmt->setFloat(index++, finiteAlways(GetTeleportDest().GetOrientation()));
+		  }
         }
 
         std::ostringstream ss;
@@ -20166,7 +20166,7 @@ void Player::SaveToDB(bool create /*=false*/)
     // save pet (hunter pet level and experience and all type pets health/mana).
     if (Pet* pet = GetPet())
         pet->SavePetToDB(PET_SAVE_AS_CURRENT);
- }
+  
 }
 // fast save function for item/money cheating preventing - save only inventory and money state
 void Player::SaveInventoryAndGoldToDB(SQLTransaction& trans)
