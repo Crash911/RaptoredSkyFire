@@ -947,6 +947,7 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
 
     if (_transport)
         _transport->RemovePassenger(this);
+
     if(GetGroup() && HaveBot())
     {
          Creature *m_bot = GetBot();
